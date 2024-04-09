@@ -1,0 +1,31 @@
+
+import boto3
+
+def lambda_handler(event, context):
+    # Initialize the EC2 client
+    ec2 = boto3.client('ec2')
+    
+    # Describe instances to get information about EC2 instances
+    response = ec2.describe_instances()
+    
+    # Create an empty list to store instance IDs
+    instances = []
+    
+    # Loop through each reservation in the response
+    for reservation in response["Reservations"]:
+        # Loop through each instance in the reservation
+        for instance in reservation["Instances"]:
+            # Check if the instance has tags
+            if "Tags" in instance:
+                # Loop through each tag of the instance
+                for tag in instance["Tags"]:
+                    # Check if the tag value is "Dev_Lab"
+                    if tag["Value"] == "Dev_Lab":
+                        # If the tag value is "Dev_Lab", append the instance ID to the list
+                        instances.append(instance['InstanceId'])
+    
+    # Stop the instances
+    response = ec2.stop_instances(InstanceIds=instances)
+    
+    # Print the list of instance IDs that have been stopped
+    print(instances, "stopped")
